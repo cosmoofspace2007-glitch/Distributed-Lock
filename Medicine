@@ -1,0 +1,15 @@
+@Entity
+public class Medicine {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    private Integer quantity;
+
+    private Double price;
+
+    // Getter & Setter
+}
