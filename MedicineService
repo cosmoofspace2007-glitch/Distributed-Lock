@@ -1,0 +1,58 @@
+package com.example.pharmacy.service;
+
+import java.util.concurrent.TimeUnit;
+
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class MedicineService {
+
+    @Autowired
+    private MedicineRepository repository;
+
+    @Autowired
+    private RedissonClient redissonClient;
+
+    public String sellMedicine(Long id) {
+
+        RLock lock = redissonClient.getLock("lock:medicine:" + id);
+
+        try {
+
+            boolean success = lock.tryLock(3, 5, TimeUnit.SECONDS);
+
+            if (!success) {
+                return "Không lấy được Lock.";
+            }
+
+            Medicine medicine = repository.findById(id).orElseThrow();
+
+            if (medicine.getQuantity() <= 0) {
+                return "Hết hàng.";
+            }
+
+            medicine.setQuantity(medicine.getQuantity() - 1);
+
+            repository.save(medicine);
+
+            return "Bán thuốc thành công.";
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return "Có lỗi xảy ra.";
+
+        } finally {
+
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
+
+        }
+
+    }
+
+}
