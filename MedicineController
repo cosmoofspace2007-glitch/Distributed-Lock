@@ -1,0 +1,15 @@
+@RestController
+@RequestMapping("/medicine")
+public class MedicineController {
+
+    @Autowired
+    private MedicineService medicineService;
+
+    @PostMapping("/sell/{id}")
+    public String sell(@PathVariable Long id){
+
+        return medicineService.sellMedicine(id);
+
+    }
+
+}
